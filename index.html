@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AdminDesk</title>
+<link
+      rel="stylesheet"
+      href="//cdn.jsdelivr.net/npm/hack-font@3.3.0/build/web/hack.css"
+/>
+<link rel="stylesheet" href="./css/main.css">
+</head>
+<body>
+
+<!-- IP Structure Breaker-->
+<div class="card">
+  <h1>IP Structure Breaker (IPv4)</h1>
+  <p>Inserisci un indirizzo IPv4 (anche con prefisso CIDR, es 192.168.1.10/24)</p>
+
+  <form id="ipForm" onsubmit="return false;">
+    <input id="ipInput" type="text" placeholder="IPv4" />
+    <button id="analyzeBtn" type="button">Analizza</button>
+    <button id="clearBtn" type="button">svuota</button>
+  </form>
+
+  <div id="error" class="error"></div>
+  <div id="result" class="result"></div>
+</div>
+
+<!-- Base64 / Hex /URL Encoder-Decoder -->
+<div class="card">
+  <h1>Base64 / Hex / URL Encoder-Decoder</h1>
+  <p>Inserisci testo e scegli il tipo di codifica per Encode/Decode</p>
+
+  <form id="encoderForm" onsubmit="return false;">
+    <textarea id="inputText" placeholder="Inserisci testo qui..." rows="4"></textarea>
+
+    <label for="typeSelect">Tipo di codifica:</label>
+    <select id="typeSelect">
+      <option value="base64">Base64</option>
+      <option value="hex">Hex</option>
+      <option value="url">URL</option>
+    </select>
+
+    <div class="buttons">
+      <button type="button" id="encodeBtn">codifica</button>
+      <button type="button" id="decodeBtn">decodifica</button>
+      <button type="button" id="clearEncoderBtn">svuota</button>
+    </div>
+  </form>
+
+  <div id="errorEncoder" class="error"></div>
+  <div id="output" class="result"></div>
+</div>
+
+<!--UUID Generator-->
+<div class="card">
+  <h1>UUID Generator</h1>
+  <p>Genera UUID v4 casuali</p>
+
+  <form id="uuidForm" onsubmit="return false;">
+    <button type="button" id="RefreshUuidBtn">Rigenera</button>
+  </form>
+
+  <div id="uuidResult" class="result"></div>
+
+</div>
+
+<script src="./js/ip.js" defer></script>
+<script src="./js/encoder.js" defer></script>
+<script src="./js/uuid.js" defer></script>
+
+
+</body>
+</html>
