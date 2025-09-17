@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AdminDesk</title>
+<title>AdminKit</title>
 <link
       rel="stylesheet"
       href="//cdn.jsdelivr.net/npm/hack-font@3.3.0/build/web/hack.css"
@@ -53,6 +53,22 @@
   <div id="output" class="result"></div>
 </div>
 
+<!-- Timestamp Converter-->
+<div class="card">
+  <h1>Timestamp Converter</h1>
+  <p>Inserisci un <b>tmestamp</b> (secondi/millisecondi) <br>o una <b>data/ora</b> (es: 2025-09-17T17:24:37.000)</p>
+
+  <form id="timestampForm" onsubmit="return false;">
+    <input id="timestampInput" type="text" placeholder="es: 1758129877 o 2025-09-17T17:24:37.000" />
+
+    <button type="button" id="toDateBtn">Converti in Data</button>
+    <button type="button" id="toTimestampBtn">Converti in Timestamp</button>
+  </form>
+
+  <div id="timestampError" class="error"></div>
+  <div id="timestampResult" class="result"></div>
+</div>
+
 <!--UUID Generator-->
 <div class="card">
   <h1>UUID Generator</h1>
@@ -69,6 +85,7 @@
 <script src="./js/ip.js" defer></script>
 <script src="./js/encoder.js" defer></script>
 <script src="./js/uuid.js" defer></script>
+<script src="./js/timestamp.js" defer></script>
 
 
 </body>
