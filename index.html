@@ -27,6 +27,21 @@
   <div id="result" class="result"></div>
 </div>
 
+<div class="card">
+  <h1>Subnetting</h1>
+  <p>Inserisci un indirizzo IPv4, CIDR numero di sottoreti o numero di host </p>
+  <form action="subnettingForm" onsubmit="return false;">
+    <input id="IpInput" type="text" placeholder="IPv4" />
+    <input id="subnetMaskInput" type="text" placeholder="subnet o CIDR" min="1" max="32"/>
+    <input id="subnetsInput" type="number" placeholder="Numero di sottoreti" min="1"/>
+    <input id="hostsInput" type="number" placeholder="Numero di host per sottorete" min="1"/>
+    <button id="subnetAnalyzeBtn" type="button">Calcola</button>
+    <button id="subnetClearBtn" type="button">svuota</button>
+  </form>
+  <div id="SubnettingErr" class="error"></div>
+  <div id="SubnettingOut" class="result"></div>
+</div>
+
 <!-- Base64 / Hex /URL Encoder-Decoder -->
 <div class="card">
   <h1>Base64 / Hex / URL Encoder-Decoder</h1>
@@ -86,6 +101,7 @@
 <script src="./js/encoder.js" defer></script>
 <script src="./js/uuid.js" defer></script>
 <script src="./js/timestamp.js" defer></script>
+<script src="./js/subnetting.js" defer></script>
 
 
 </body>

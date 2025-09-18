@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const analyzeBtn = document.getElementById('analyzeBtn');
   const clearBtn   = document.getElementById('clearBtn');
   const resultEl   = document.getElementById('result');
-  const errorEl    = document.getElementById('error');
+  const IpErrorEl    = document.getElementById('error');
 
 
   function isIPv4Basic(input) {
@@ -126,17 +126,17 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   analyzeBtn.addEventListener('click', () => {
-    errorEl.textContent = '';
+    IpErrorEl.textContent = '';
     resultEl.innerHTML = '';
 
     const raw = ipInput.value.trim();
     if (!raw) {
-      errorEl.textContent = 'Inserisci un IP';
+      IpErrorEl.textContent = 'Inserisci un IP';
       return;
     }
 
     if (!isIPv4Basic(raw) || !validateIPv4(raw)) {
-      errorEl.textContent = 'Formato IPv4 non valido';
+      IpErrorEl.textContent = 'Formato IPv4 non valido';
       return;
     }
 
@@ -144,14 +144,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = analyzeIPv4(raw);
       resultEl.innerHTML = renderTable(res);
     } catch (err) {
-      errorEl.textContent = err;
+      IpErrorEl.textContent = err;
     }
   });
 
   clearBtn.addEventListener('click', () => {
     ipInput.value = '';
     resultEl.innerHTML = '';
-    errorEl.textContent = '';
+    IpErrorEl.textContent = '';
   });
 
 });

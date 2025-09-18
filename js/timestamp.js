@@ -1,7 +1,7 @@
 let input;
 
 const resultEl = document.getElementById('timestampResult');
-const errorEl = document.getElementById('timestampError');
+const TimestampErrorEl = document.getElementById('timestampError');
 
 document.getElementById('timestampInput').addEventListener('input', function() {
   input = this.value;
@@ -9,11 +9,11 @@ document.getElementById('timestampInput').addEventListener('input', function() {
 
 document.getElementById('toDateBtn').addEventListener('click', function() {
   let timestamp = input;
-  errorEl.textContent = '';
+  TimestampErrorEl.textContent = '';
   resultEl.textContent = '';
 
   if (!timestamp) {
-    errorEl.textContent = 'Inserisci un valore';
+    TimestampErrorEl.textContent = 'Inserisci un valore';
     return;
   }
 
@@ -30,29 +30,29 @@ document.getElementById('toDateBtn').addEventListener('click', function() {
     }
     const date = new Date(ms);
     if (isNaN(date.getTime())) {
-      errorEl.textContent = 'Timestamp non valido';
+      TimestampErrorEl.textContent = 'Timestamp non valido';
     } else {
       resultEl.textContent = `Data locale: ${date.toLocaleString()} | UTC: ${date.toISOString()}`;
     }
   } else {
-    errorEl.textContent = 'Inserisci un timestamp numerico';
+    TimestampErrorEl.textContent = 'Inserisci un timestamp numerico';
   }
 });
 
 document.getElementById('toTimestampBtn').addEventListener('click', function() { 
   let date = input;
-  errorEl.textContent = '';
+  TimestampErrorEl.textContent = '';
   resultEl.textContent = '';
 
   if (!date) {
-    errorEl.textContent = 'Inserisci un valore';
+    TimestampErrorEl.textContent = 'Inserisci un valore';
     return;
   }
 
   const timestamp = new Date(date);
 
   if (isNaN(timestamp.getTime())) {
-    errorEl.textContent = 'Data/ora non valida';
+    TimestampErrorEl.textContent = 'Data/ora non valida';
     return;
   }
 
