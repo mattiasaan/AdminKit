@@ -1,8 +1,8 @@
 let ip, subnetMask, subnets, hosts;
-
 let CalculatedSubnets = [];
 
 const SubnetErrorEl = document.getElementById("SubnettingErr");
+const resultEl = document.getElementById("SubnettingOut");
 
 document
   .getElementById("subnetAnalyzeBtn")
@@ -22,17 +22,20 @@ document.getElementById("subnetClearBtn").addEventListener("click", function () 
 
 function calculateSubnetting() {
   CalculatedSubnets = [];
-  BaseIp = ipToInt(ip);
+  let BaseIp = ipToInt(ip);
+
   if (!isNaN(subnetMask) && subnetMask > 0 && subnetMask <= 32) {
     cidr = subnetMask;
   } else {
     cidr = subnetToCidr(subnetMask);
   }
 
+  BaseIp = BaseIp & (0xffffffff << (32 - cidr));
+
   if (!isNaN(subnets) && subnets > 0) {
-    bits_needed = Math.ceil(Math.log2(subnets));
-    NewCidr = Math.ceil(cidr + bits_needed);
-    SubSize = 2 ** (32 - NewCidr);
+    let bits_needed = Math.ceil(Math.log2(subnets));
+    let NewCidr = cidr + bits_needed;
+    let SubSize = 2 ** (32 - NewCidr);
 
     for (let i = 0; i < subnets; i++) {
       let net_i = (BaseIp + i * SubSize) >>> 0;
@@ -52,11 +55,11 @@ function calculateSubnetting() {
     }
     displayResults();
   } else if (!isNaN(hosts) && hosts > 0) {
-    bits_host = Math.ceil(Math.log2(hosts + 2));
-    NewCidr = Math.floor(32 - bits_host);
-    SubSize = 2 ** (32 - NewCidr);
+    let bits_host = Math.ceil(Math.log2(hosts + 2));
+    let NewCidr = 32 - bits_host;
+    let SubSize = 2 ** (32 - NewCidr);
 
-    NumSub = 2 ** (32 - cidr) / 2 ** (32 - NewCidr);
+    let NumSub = 2 ** (32 - cidr) / 2 ** (32 - NewCidr);
 
     for (let i = 0; i < NumSub; i++) {
       let net_i = (BaseIp + i * SubSize) >>> 0;
@@ -113,8 +116,12 @@ function ipToInt(ip) {
 
   if (octets.length !== 4) {
     SubnetErrorEl.textContent = "Indirizzo IP non valido";
-  } else if (octets.some((octet) => isNaN(octet) || octet < 0 || octet > 255)) {
+    return;
+  }
+
+  if (octets.some((octet) => isNaN(octet) || octet < 0 || octet > 255)) {
     SubnetErrorEl.textContent = "Indirizzo IP non valido";
+    return;
   }
 
   for (let i = 0; i < octets.length; i++) {

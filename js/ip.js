@@ -1,21 +1,16 @@
 document.addEventListener('DOMContentLoaded', () => {
-
   const ipInput    = document.getElementById('ipInput');
   const analyzeBtn = document.getElementById('analyzeBtn');
   const clearBtn   = document.getElementById('clearBtn');
   const resultEl   = document.getElementById('result');
-  const IpErrorEl    = document.getElementById('error');
-
+  const IpErrorEl  = document.getElementById('error');
 
   function isIPv4Basic(input) {
-    const regex = /^(?:\d{1,3}\.){3}\d{1,3}(?:\/\d{1,2})?$/;
+    // accetta IPv4 con o senza /CIDR (solo da 0 a 32)
+    const regex = /^(?:\d{1,3}\.){3}\d{1,3}(?:\/(?:[0-9]|[1-2][0-9]|3[0-2]))?$/;
     return regex.test(input.trim());
   }
 
-  //\d qualsiasi cifra (0-9)
-  // {1,3} ripetuta da 1 a 3 volte
-
-  //ottetto tra 0 e 255
   function validateIPv4(input) {
     const [ip] = input.split('/');
     const parts = ip.trim().split('.').map(Number);
@@ -23,14 +18,11 @@ document.addEventListener('DOMContentLoaded', () => {
     return parts.every(p => Number.isInteger(p) && p >= 0 && p <= 255);
   }
 
-
-  // Converte IPv4 in int
   function ipv4ToInt(ip) {
     const [a,b,c,d] = ip.split('.').map(Number);
     return ((a<<24) | (b<<16) | (c<<8) | d) >>> 0;
   }
 
-  // Converte int in IPv4
   function intToIPv4(num) {
     return [
       (num >>> 24) & 255,
@@ -40,10 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
     ].join('.');
   }
 
-  // Genera subnet
   function prefixToMask(prefix) {
-    if (prefix === 0) return 0;
-    return (0xFFFFFFFF << (32 - prefix)) >>> 0;
+    return prefix === 0 ? 0 : (0xFFFFFFFF << (32 - prefix)) >>> 0;
   }
 
   function ipv4Class(ipInt) {
@@ -60,15 +50,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const ipStr = ipStrRaw.trim();
     const ipInt = ipv4ToInt(ipStr);
 
-    // Determina prefisso CIDR
     let prefix;
     if (prefixRaw) {
       prefix = parseInt(prefixRaw, 10);
     } else {
       const cls = ipv4Class(ipInt);
-      if (cls === 'A') prefix = 8;
-      else if (cls === 'B') prefix = 16;
-      else prefix = 24;
+      prefix = cls === 'A' ? 8 : cls === 'B' ? 16 : 24;
     }
 
     if (!Number.isInteger(prefix) || prefix < 0 || prefix > 32) {
@@ -79,15 +66,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const networkInt = (ipInt & maskInt) >>> 0;
     const broadcastInt = (networkInt | (~maskInt >>> 0)) >>> 0;
 
-    
     let firstHost, lastHost, numHosts;
 
     if (prefix === 32) {
-      firstHost = networkInt;
-      lastHost = broadcastInt;
+      firstHost = lastHost = networkInt;
       numHosts = 1;
     } else if (prefix === 31) {
-      firstHost = networkInt + 1;
+      firstHost = networkInt;
       lastHost = broadcastInt;
       numHosts = 2;
     } else {
@@ -111,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderTable(result) {
     return `
-      <table>
+      <table class="ip-table">
         <tr><th>Campo</th><th>Valore</th></tr>
         <tr><td>IP</td><td>${result.ip}</td></tr>
         <tr><td>Classe</td><td>${result.class}</td></tr>
@@ -119,8 +104,8 @@ document.addEventListener('DOMContentLoaded', () => {
         <tr><td>Subnet Mask</td><td>${result.mask}</td></tr>
         <tr><td>Network ID</td><td>${result.network}</td></tr>
         <tr><td>Broadcast</td><td>${result.broadcast}</td></tr>
-        <tr><td>Host range</td><td>${result.hostMin} — ${result.hostMax}</td></tr>
-        <tr><td>Host utilizzabili</td><td>${result.numHosts}</td></tr>
+        <tr><td>Host range</td><td>${result.prefix >= 31 ? 'N/A' : `${result.hostMin} — ${result.hostMax}`}</td></tr>
+        <tr><td>Host utilizzabili</td><td>${result.prefix >= 31 ? 'N/A' : result.numHosts}</td></tr>
       </table>
     `;
   }
@@ -153,5 +138,4 @@ document.addEventListener('DOMContentLoaded', () => {
     resultEl.innerHTML = '';
     IpErrorEl.textContent = '';
   });
-
 });
