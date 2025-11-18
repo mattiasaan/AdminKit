@@ -1,6 +1,6 @@
 let input;
 
-const resultEl = document.getElementById('timestampResult');
+const resultElTime = document.getElementById('timestampResult');
 const TimestampErrorEl = document.getElementById('timestampError');
 
 document.getElementById('timestampInput').addEventListener('input', function() {
@@ -10,7 +10,7 @@ document.getElementById('timestampInput').addEventListener('input', function() {
 document.getElementById('toDateBtn').addEventListener('click', function() {
   let timestamp = input;
   TimestampErrorEl.textContent = '';
-  resultEl.textContent = '';
+  resultElTime.textContent = '';
 
   if (!timestamp) {
     TimestampErrorEl.textContent = 'Inserisci un valore';
@@ -32,7 +32,7 @@ document.getElementById('toDateBtn').addEventListener('click', function() {
     if (isNaN(date.getTime())) {
       TimestampErrorEl.textContent = 'Timestamp non valido';
     } else {
-      resultEl.textContent = `Data locale: ${date.toLocaleString()} | UTC: ${date.toISOString()}`;
+      resultElTime.textContent = `Data locale: ${date.toLocaleString()} | UTC: ${date.toISOString()}`;
     }
   } else {
     TimestampErrorEl.textContent = 'Inserisci un timestamp numerico';
@@ -42,7 +42,7 @@ document.getElementById('toDateBtn').addEventListener('click', function() {
 document.getElementById('toTimestampBtn').addEventListener('click', function() { 
   let date = input;
   TimestampErrorEl.textContent = '';
-  resultEl.textContent = '';
+  resultElTime.textContent = '';
 
   if (!date) {
     TimestampErrorEl.textContent = 'Inserisci un valore';
@@ -56,5 +56,5 @@ document.getElementById('toTimestampBtn').addEventListener('click', function() {
     return;
   }
 
-  resultEl.textContent = `Timestamp (ms): ${timestamp.getTime()} | Timestamp (s): ${Math.floor(timestamp.getTime() / 1000)}`;
+  resultElTime.textContent = `Timestamp (ms): ${timestamp.getTime()} | Timestamp (s): ${Math.floor(timestamp.getTime() / 1000)}`;
 });

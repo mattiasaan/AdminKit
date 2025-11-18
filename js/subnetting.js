@@ -1,176 +1,174 @@
-let ip, subnetMask, subnets, hosts;
 let CalculatedSubnets = [];
 
 const SubnetErrorEl = document.getElementById("SubnettingErr");
-const resultEl = document.getElementById("SubnettingOut");
+const resultElSub = document.getElementById("SubnettingOut");
 
-document
-  .getElementById("subnetAnalyzeBtn")
-  .addEventListener("click", function () {
-    ip = document.getElementById("IpInput").value.trim();
-    subnetMask = document.getElementById("subnetMaskInput").value.trim();
-    subnets = parseInt(document.getElementById("subnetsInput").value.trim());
-    hosts = parseInt(document.getElementById("hostsInput").value.trim());
-    SubnetErrorEl.textContent = "";
-    resultEl.textContent = "";
-    calculateSubnetting();
-  });
+document.getElementById("subnetAnalyzeBtn").addEventListener("click", function () {
+  const ip = document.getElementById("IpInput").value.trim();
+  const subnetMaskInput = document.getElementById("subnetMaskInput").value.trim();
+  const subnets = parseInt(document.getElementById("subnetsInput").value.trim());
+  const hosts = parseInt(document.getElementById("hostsInput").value.trim());
 
-document.getElementById("subnetClearBtn").addEventListener("click", function () {
-  window.location.reload();
+  SubnetErrorEl.textContent = "";
+  resultElSub.innerHTML = "";
+
+  if (!ip) {
+    SubnetErrorEl.textContent = "Inserisci un indirizzo IPv4 valido";
+    return;
+  }
+
+  calculateSubnetting(ip, subnetMaskInput, subnets, hosts);
 });
 
-function calculateSubnetting() {
-  CalculatedSubnets = [];
-  let BaseIp = ipToInt(ip);
+document.getElementById("subnetClearBtn").addEventListener("click", function () {
+  document.getElementById("IpInput").value = "";
+  document.getElementById("subnetMaskInput").value = "";
+  document.getElementById("subnetsInput").value = "";
+  document.getElementById("hostsInput").value = "";
+  SubnetErrorEl.textContent = "";
+  resultElSub.innerHTML = "";
+});
 
-  if (!isNaN(subnetMask) && subnetMask > 0 && subnetMask <= 32) {
-    cidr = subnetMask;
-  } else {
-    cidr = subnetToCidr(subnetMask);
+function calculateSubnetting(ip, subnetMaskInput, subnets, hosts) {
+  CalculatedSubnets = [];
+
+  const BaseIp = ipToInt(ip);
+  if (BaseIp === null) return;
+
+  let cidr = parseInt(subnetMaskInput);
+  if (isNaN(cidr)) {
+    cidr = subnetToCidr(subnetMaskInput);
+    if (cidr === null) return;
+  }
+  if (cidr < 0 || cidr > 32) {
+    SubnetErrorEl.textContent = "CIDR non valido";
+    return;
   }
 
-  BaseIp = BaseIp & (0xffffffff << (32 - cidr));
+  // Maschera base
+  const mask = 0xffffffff << (32 - cidr) >>> 0;
+  const networkBase = BaseIp & mask;
 
   if (!isNaN(subnets) && subnets > 0) {
-    let bits_needed = Math.ceil(Math.log2(subnets));
-    let NewCidr = cidr + bits_needed;
-    let SubSize = 2 ** (32 - NewCidr);
+    let bitsNeeded = Math.ceil(Math.log2(subnets));
+    let newCidr = cidr + bitsNeeded;
+    if (newCidr > 32) {
+      SubnetErrorEl.textContent = "Impossibile creare tante sottoreti con questa subnet mask";
+      return;
+    }
+    const subnetSize = 2 ** (32 - newCidr);
 
     for (let i = 0; i < subnets; i++) {
-      let net_i = (BaseIp + i * SubSize) >>> 0;
-      let broadcast_i = net_i + SubSize - 1;
-      let firstHost_i = net_i + 1;
-      let lastHost_i = broadcast_i - 1;
-
-      let subnetObj = {
-        net: intToIp(net_i),
-        broadcast: intToIp(broadcast_i),
-        firstHost: intToIp(firstHost_i),
-        lastHost: intToIp(lastHost_i),
-        cidr: NewCidr,
-      };
-
-      CalculatedSubnets.push(subnetObj);
+      let net = networkBase + i * subnetSize;
+      let broadcast = net + subnetSize - 1;
+      CalculatedSubnets.push({
+        net: intToIp(net),
+        broadcast: intToIp(broadcast),
+        firstHost: intToIp(net + 1),
+        lastHost: intToIp(broadcast - 1),
+        cidr: newCidr
+      });
     }
-    displayResults();
   } else if (!isNaN(hosts) && hosts > 0) {
-    let bits_host = Math.ceil(Math.log2(hosts + 2));
-    let NewCidr = 32 - bits_host;
-    let SubSize = 2 ** (32 - NewCidr);
-
-    let NumSub = 2 ** (32 - cidr) / 2 ** (32 - NewCidr);
-
-    for (let i = 0; i < NumSub; i++) {
-      let net_i = (BaseIp + i * SubSize) >>> 0;
-      let broadcast_i = net_i + SubSize - 1;
-      let firstHost_i = net_i + 1;
-      let lastHost_i = broadcast_i - 1;
-
-      let subnetObj = {
-        net: intToIp(net_i),
-        broadcast: intToIp(broadcast_i),
-        firstHost: intToIp(firstHost_i),
-        lastHost: intToIp(lastHost_i),
-        cidr: NewCidr,
-      };
-
-      CalculatedSubnets.push(subnetObj);
+    const bitsHost = Math.ceil(Math.log2(hosts + 2));
+    const newCidr = 32 - bitsHost;
+    if (newCidr < cidr) {
+      SubnetErrorEl.textContent = "Impossibile creare sottoreti con questo numero di host";
+      return;
     }
-    displayResults();
+    const subnetSize = 2 ** bitsHost;
+    const numSubnets = 2 ** (newCidr - cidr);
+
+    for (let i = 0; i < numSubnets; i++) {
+      let net = networkBase + i * subnetSize;
+      let broadcast = net + subnetSize - 1;
+      CalculatedSubnets.push({
+        net: intToIp(net),
+        broadcast: intToIp(broadcast),
+        firstHost: intToIp(net + 1),
+        lastHost: intToIp(broadcast - 1),
+        cidr: newCidr
+      });
+    }
   } else {
-    SubnetErrorEl.textContent =
-      "inserisci numero sottoreti o numero host per sottorete";
+    SubnetErrorEl.textContent = "Inserisci numero di sottoreti o numero di host per sottorete";
+    return;
   }
+
+  displayResults();
 }
 
 function displayResults() {
   let html = "";
-
-  for (let i = 0; i < CalculatedSubnets.length; i++) {
-    let subnet = CalculatedSubnets[i];
-
+  CalculatedSubnets.forEach((subnet, i) => {
     html += `
-    <table>
-      <tr><th colspan="2">Sottorete ${i + 1}</th></tr>
-      <tr><td>Rete</td><td>${subnet.net}</td></tr>
-      <tr><td>Prefisso (CIDR)</td><td>/${subnet.cidr}</td></tr>
-      <tr><td>Broadcast</td><td>${subnet.broadcast}</td></tr>
-      <tr><td>Primo Host</td><td>${subnet.firstHost}</td></tr>
-      <tr><td>Ultimo Host</td><td>${subnet.lastHost}</td></tr>
-    </table>
-  `;
-  }
+      <table>
+        <tr><th colspan="2">Sottorete ${i + 1}</th></tr>
+        <tr><td>Rete</td><td>${subnet.net}</td></tr>
+        <tr><td>Prefisso (CIDR)</td><td>/${subnet.cidr}</td></tr>
+        <tr><td>Broadcast</td><td>${subnet.broadcast}</td></tr>
+        <tr><td>Primo Host</td><td>${subnet.firstHost}</td></tr>
+        <tr><td>Ultimo Host</td><td>${subnet.lastHost}</td></tr>
+      </table>
+    `;
+  });
 
-  document.getElementById("SubnettingOut").innerHTML = html;
+  resultElSub.innerHTML = html;
 }
 
 function ipToInt(ip) {
-  if (typeof ip !== "string") {
-    SubnetErrorEl.textContent = "Indirizzo IP non valido";
-    return;
-  }
-
-  let octets = ip.split(".");
-  let int = 0;
-
+  const octets = ip.split(".");
   if (octets.length !== 4) {
     SubnetErrorEl.textContent = "Indirizzo IP non valido";
-    return;
+    return null;
   }
-
-  if (octets.some((octet) => isNaN(octet) || octet < 0 || octet > 255)) {
-    SubnetErrorEl.textContent = "Indirizzo IP non valido";
-    return;
+  let int = 0;
+  for (let octet of octets) {
+    const num = parseInt(octet);
+    if (isNaN(num) || num < 0 || num > 255) {
+      SubnetErrorEl.textContent = "Indirizzo IP non valido";
+      return null;
+    }
+    int = (int << 8) + num;
   }
-
-  for (let i = 0; i < octets.length; i++) {
-    let octetValue = parseInt(octets[i]);
-    int = (int << 8) + octetValue;
-  }
-
-  int = int >>> 0;
-  return int;
+  return int >>> 0;
 }
 
 function intToIp(int) {
-  return (
-    ((int >>> 24) & 0xff) +
-    "." +
-    ((int >>> 16) & 0xff) +
-    "." +
-    ((int >>> 8) & 0xff) +
-    "." +
-    (int & 0xff)
-  );
+  return [
+    (int >>> 24) & 0xff,
+    (int >>> 16) & 0xff,
+    (int >>> 8) & 0xff,
+    int & 0xff
+  ].join(".");
 }
 
 function subnetToCidr(subnet) {
-  if (typeof subnet === "number" && subnet >= 0 && subnet <= 32) {
-    return subnet;
+  const octets = subnet.split(".");
+  if (octets.length !== 4) {
+    SubnetErrorEl.textContent = "Subnet mask non valida";
+    return null;
   }
-
-  if (typeof subnet === "string") {
-    let octets = subnet.split(".");
-    if (octets.length !== 4) {
+  let cidr = 0;
+  let reachedZero = false;
+  for (let octet of octets) {
+    const num = parseInt(octet);
+    if (isNaN(num) || num < 0 || num > 255) {
       SubnetErrorEl.textContent = "Subnet mask non valida";
-      return;
+      return null;
     }
-    let cidr = 0;
-    for (let i = 0; i < octets.length; i++) {
-      let num = parseInt(octets[i]);
-      if (isNaN(num) || num < 0 || num > 255) {
-        SubnetErrorEl.textContent = "Subnet mask non valida";
-        return;
-      }
-      let binary = num.toString(2).padStart(8, "0");
-      for (let bit of binary) {
-        if (bit === "1") cidr++;
+    const bin = num.toString(2).padStart(8, "0");
+    for (let bit of bin) {
+      if (bit === "1") {
+        if (reachedZero) {
+          SubnetErrorEl.textContent = "Subnet mask non valida";
+          return null;
+        }
+        cidr++;
+      } else {
+        reachedZero = true;
       }
     }
-    return cidr;
   }
-  SubnetErrorEl.textContent = "Subnet mask non valida";
+  return cidr;
 }
-
-

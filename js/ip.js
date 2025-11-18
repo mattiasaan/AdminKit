@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const ipInput    = document.getElementById('ipInput');
   const analyzeBtn = document.getElementById('analyzeBtn');
   const clearBtn   = document.getElementById('clearBtn');
-  const resultEl   = document.getElementById('result');
+  const resultElIp   = document.getElementById('result');
   const IpErrorEl  = document.getElementById('error');
 
   function isIPv4Basic(input) {
@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   analyzeBtn.addEventListener('click', () => {
     IpErrorEl.textContent = '';
-    resultEl.innerHTML = '';
+    resultElIp.innerHTML = '';
 
     const raw = ipInput.value.trim();
     if (!raw) {
@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       const res = analyzeIPv4(raw);
-      resultEl.innerHTML = renderTable(res);
+      resultElIp.innerHTML = renderTable(res);
     } catch (err) {
       IpErrorEl.textContent = err;
     }
@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   clearBtn.addEventListener('click', () => {
     ipInput.value = '';
-    resultEl.innerHTML = '';
+    resultElIp.innerHTML = '';
     IpErrorEl.textContent = '';
   });
 });
