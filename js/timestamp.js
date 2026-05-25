@@ -1,60 +1,65 @@
-let input;
+document.addEventListener('DOMContentLoaded', () => {
+  const inputEl       = document.getElementById('timestampInput');
+  const resultElTime  = document.getElementById('timestampResult');
+  const errorEl       = document.getElementById('timestampError');
 
-const resultElTime = document.getElementById('timestampResult');
-const TimestampErrorEl = document.getElementById('timestampError');
-
-document.getElementById('timestampInput').addEventListener('input', function() {
-  input = this.value;
-});
-
-document.getElementById('toDateBtn').addEventListener('click', function() {
-  let timestamp = input;
-  TimestampErrorEl.textContent = '';
-  resultElTime.textContent = '';
-
-  if (!timestamp) {
-    TimestampErrorEl.textContent = 'Inserisci un valore';
-    return;
+  function clearOutput() {
+    errorEl.textContent   = '';
+    resultElTime.textContent = '';
   }
 
-  if (/^\d+$/.test(timestamp)) {
-    let ms, s;
-    if (timestamp.length <= 10) {
-      // Input in s
-      s = Number(timestamp);
-      ms = s * 1000;
-    } else {
-      // Input in ms
-      ms = Number(timestamp);
-      s = Math.floor(ms / 1000);
+  document.getElementById('toDateBtn').addEventListener('click', () => {
+    clearOutput();
+    const raw = inputEl.value.trim();
+
+    if (!raw) {
+      errorEl.textContent = 'Inserisci un valore';
+      return;
     }
+
+    if (!/^\d+$/.test(raw)) {
+      errorEl.textContent = 'Inserisci un timestamp numerico (secondi o millisecondi)';
+      return;
+    }
+
+    // Heuristic: timestamps > 1e12 are almost certainly milliseconds
+    const num = Number(raw);
+    const ms  = raw.length <= 10 ? num * 1000 : num;
     const date = new Date(ms);
+
     if (isNaN(date.getTime())) {
-      TimestampErrorEl.textContent = 'Timestamp non valido';
-    } else {
-      resultElTime.textContent = `Data locale: ${date.toLocaleString()} | UTC: ${date.toISOString()}`;
+      errorEl.textContent = 'Timestamp non valido';
+      return;
     }
-  } else {
-    TimestampErrorEl.textContent = 'Inserisci un timestamp numerico';
-  }
-});
 
-document.getElementById('toTimestampBtn').addEventListener('click', function() { 
-  let date = input;
-  TimestampErrorEl.textContent = '';
-  resultElTime.textContent = '';
+    const s = Math.floor(ms / 1000);
+    resultElTime.textContent =
+      `Data locale : ${date.toLocaleString()}\n` +
+      `UTC         : ${date.toISOString()}\n` +
+      `Epoch (s)   : ${s}\n` +
+      `Epoch (ms)  : ${ms}`;
+  });
 
-  if (!date) {
-    TimestampErrorEl.textContent = 'Inserisci un valore';
-    return;
-  }
+  document.getElementById('toTimestampBtn').addEventListener('click', () => {
+    clearOutput();
+    const raw = inputEl.value.trim();
 
-  const timestamp = new Date(date);
+    if (!raw) {
+      errorEl.textContent = 'Inserisci un valore';
+      return;
+    }
 
-  if (isNaN(timestamp.getTime())) {
-    TimestampErrorEl.textContent = 'Data/ora non valida';
-    return;
-  }
+    const date = new Date(raw);
 
-  resultElTime.textContent = `Timestamp (ms): ${timestamp.getTime()} | Timestamp (s): ${Math.floor(timestamp.getTime() / 1000)}`;
+    if (isNaN(date.getTime())) {
+      errorEl.textContent = 'Data/ora non valida — usa il formato ISO 8601, es: 2025-09-17T17:24:37';
+      return;
+    }
+
+    const ms = date.getTime();
+    const s  = Math.floor(ms / 1000);
+    resultElTime.textContent =
+      `Timestamp (s)  : ${s}\n` +
+      `Timestamp (ms) : ${ms}`;
+  });
 });
